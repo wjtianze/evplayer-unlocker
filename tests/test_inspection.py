@@ -22,7 +22,8 @@ class InspectionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/"test.ev4a"; path.write_bytes(b"anything")
             (Path(directory)/"notes.txt").write_text("test")
-            self.assertEqual(collect([directory, str(path)]), [path])
+            # Windows CI may expose TEMP through an 8.3 short-path alias.
+            self.assertEqual(collect([directory, str(path)]), [path.resolve()])
     def test_missing_input_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ExportError): collect([str(Path(directory)/"missing")])
