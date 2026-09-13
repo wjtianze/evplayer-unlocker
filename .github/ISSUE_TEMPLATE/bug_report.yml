@@ -1,0 +1,26 @@
+name: 问题反馈
+description: 文件不能导出、未知版本或运行错误
+body:
+  - type: markdown
+    attributes:
+      value: 请勿上传课程视频、激活码、播放参数或进程内存。
+  - type: input
+    id: versions
+    attributes:
+      label: 工具、Windows、EVPlayer 版本
+    validations:
+      required: true
+  - type: dropdown
+    id: playback
+    attributes:
+      label: 文件在原 EVPlayer 中能否正常播放？
+      options: [可以, 不可以, 尚未测试]
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: 操作步骤与错误提示
+      description: 只提供错误信息；请先移除个人路径和授权数据。
+    validations:
+      required: true

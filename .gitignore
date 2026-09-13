@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+build/
+dist/
+*.spec
+*.mp4
+*.ev4a
+*.partial
+*.log
+*private*
+*session*.json
+.env*
+runtime/
