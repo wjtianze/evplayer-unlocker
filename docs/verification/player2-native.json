@@ -1,0 +1,111 @@
+{
+  "engine_sha256": "9997bfab88148ce1c90c031d353d9d15611f2f6733a7956cec76221971a9897a",
+  "vectors": [
+    {
+      "key_bits": 128,
+      "vector": 0,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 128,
+      "vector": 1,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 128,
+      "vector": 2,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 128,
+      "vector": 3,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 128,
+      "vector": 4,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 192,
+      "vector": 0,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 192,
+      "vector": 1,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 192,
+      "vector": 2,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 192,
+      "vector": 3,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 192,
+      "vector": 4,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": null
+    },
+    {
+      "key_bits": 256,
+      "vector": 0,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": true
+    },
+    {
+      "key_bits": 256,
+      "vector": 1,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": true
+    },
+    {
+      "key_bits": 256,
+      "vector": 2,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": true
+    },
+    {
+      "key_bits": 256,
+      "vector": 3,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": true
+    },
+    {
+      "key_bits": 256,
+      "vector": 4,
+      "native_decrypt_matches": true,
+      "full_schedule_matches": true
+    }
+  ],
+  "native_reader": {
+    "bytes": 33024,
+    "chunks": [
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      256
+    ],
+    "byte_identical": true
+  },
+  "scope": "Native AES and reader with public synthetic inputs; no real course or Windows session scan"
+}

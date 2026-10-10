@@ -1,0 +1,191 @@
+[
+  {
+    "name": ".?AVDecryptor@@",
+    "type_rva": "0xbf1200",
+    "col_rva": "0xb77fe0",
+    "vtable_rva": "0x8010a0",
+    "displacement": 0,
+    "methods": [
+      "0x1a4f0",
+      "0x7f64d2",
+      "0x7f64d2",
+      "0x7f64d2",
+      "0x7f64d2",
+      "0x7f64d2",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_EV4@@",
+    "type_rva": "0xbf1220",
+    "col_rva": "0xb785d0",
+    "vtable_rva": "0x802168",
+    "displacement": 0,
+    "methods": [
+      "0x2a880",
+      "0x2bf80",
+      "0x2bf70",
+      "0x2a8c0",
+      "0x2bc60",
+      "0x2bf20",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_V4A@@",
+    "type_rva": "0xbf1248",
+    "col_rva": "0xb78650",
+    "vtable_rva": "0x8022c0",
+    "displacement": 0,
+    "methods": [
+      "0x2db00",
+      "0x1d6e0",
+      "0x1af80",
+      "0x2dc60",
+      "0x2f050",
+      "0x1d670",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_EVS@@",
+    "type_rva": "0xbf1270",
+    "col_rva": "0xb788c8",
+    "vtable_rva": "0x802d80",
+    "displacement": 0,
+    "methods": [
+      "0x38b00",
+      "0x39490",
+      "0x1af80",
+      "0x38fd0",
+      "0x391d0",
+      "0x391e0",
+      "0x390a0",
+      "0x391f0",
+      "0x38bb0",
+      "0x38f10",
+      "0x38c20",
+      "0x38c10"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_EV5@@",
+    "type_rva": "0xbf18c0",
+    "col_rva": "0xb78058",
+    "vtable_rva": "0x801108",
+    "displacement": 0,
+    "methods": [
+      "0x1a520",
+      "0x1af90",
+      "0x1af80",
+      "0x1a770",
+      "0x1acf0",
+      "0x1af00",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_EV6@@",
+    "type_rva": "0xbf18e8",
+    "col_rva": "0xb780d8",
+    "vtable_rva": "0x801190",
+    "displacement": 0,
+    "methods": [
+      "0x1afe0",
+      "0x1b0e0",
+      "0x1af80",
+      "0x1b020",
+      "0x1acf0",
+      "0x1af00",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_EV7@@",
+    "type_rva": "0xbf1910",
+    "col_rva": "0xb78160",
+    "vtable_rva": "0x801200",
+    "displacement": 0,
+    "methods": [
+      "0x1b120",
+      "0x1b160",
+      "0x1af80",
+      "0x1b020",
+      "0x1acf0",
+      "0x1af00",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_V8A@@",
+    "type_rva": "0xbf1938",
+    "col_rva": "0xb781f0",
+    "vtable_rva": "0x801420",
+    "displacement": 0,
+    "methods": [
+      "0x1b1a0",
+      "0x1d6e0",
+      "0x1af80",
+      "0x1b480",
+      "0x1ce50",
+      "0x1d670",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  },
+  {
+    "name": ".?AVDecryptor_V3A@@",
+    "type_rva": "0xbf1b08",
+    "col_rva": "0xb78848",
+    "vtable_rva": "0x802cd0",
+    "displacement": 0,
+    "methods": [
+      "0x37590",
+      "0x377b0",
+      "0x1af80",
+      "0x375c0",
+      "0x1acf0",
+      "0x1af00",
+      "0x9ac0",
+      "0x1af60",
+      "0x1a590",
+      "0x1a5c0",
+      "0x1a5a0",
+      "0x7920"
+    ]
+  }
+]

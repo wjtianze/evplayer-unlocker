@@ -1,0 +1,12 @@
+{
+  "name": "public-synthetic.ev5",
+  "output": "public-synthetic-restored.mp4",
+  "source_bytes": 42304,
+  "output_bytes": 42304,
+  "source_sha256": "ff7c098ef1ef2c1bc85418f07f2e1319f94c7e5ec5f9dd9b4012fb7325ce3101",
+  "removed_trailing_bytes": 0,
+  "container_verified": true,
+  "full_decode_verified": true,
+  "byte_identical": true,
+  "test_scope": "synthetic ordinary MP4 encrypted with a public test key, not an original EVPlayer2 course"
+}

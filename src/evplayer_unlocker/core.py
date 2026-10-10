@@ -28,9 +28,21 @@ class SessionKey:
         if any(op not in b"+-*/" for op in self.operations):
             raise ExportError("不支持该视频的分块参数。")
 
-def block_key(session: SessionKey, index: int) -> bytes:
+@dataclass(frozen=True)
+class FixedAESKey:
+    """Experimental Player2 EV5/6/7 session; material never enters reports."""
+    key: bytes = field(repr=False)
+    mode: str = "EV5/6/7"
+
+    def __post_init__(self):
+        if len(self.key) != 32:
+            raise ExportError("EVPlayer2 播放参数不是预期的 AES-256 参数。")
+
+def block_key(session: SessionKey | FixedAESKey, index: int) -> bytes:
     if index < 1:
         raise ValueError("Block index starts at one")
+    if isinstance(session, FixedAESKey):
+        return session.key
     value = sum(c if c < 128 else c - 256 for c in session.master)
     for op in session.operations:
         if op == 43:
@@ -73,7 +85,7 @@ def inspect_boxes(path: Path):
             position += length
     return result, position, size - position
 
-def choose_session(source: Path, sessions: list[SessionKey]) -> SessionKey:
+def choose_session(source: Path, sessions: list[SessionKey | FixedAESKey]) -> SessionKey | FixedAESKey:
     with source.open("rb") as stream:
         encrypted = stream.read(64)
     if len(encrypted) < 32:
@@ -83,9 +95,11 @@ def choose_session(source: Path, sessions: list[SessionKey]) -> SessionKey:
         box_size = int.from_bytes(plain[:4], "big")
         if plain[4:8] == b"ftyp" and 16 <= box_size <= 4096:
             return session
+    if any(isinstance(session, FixedAESKey) for session in sessions):
+        raise ExportError("当前 EVPlayer2 播放参数无法还原此文件的 MP4 文件头；请先正常播放对应视频，或检查是否为尚未支持的容器格式。")
     raise ExportError("当前播放参数与此文件不匹配，请先在 EVPlayer 中正常播放同一课程的视频。")
 
-def convert(source: Path, destination: Path, session: SessionKey,
+def convert(source: Path, destination: Path, session: SessionKey | FixedAESKey,
             progress: Callable[[int, int], None] | None = None,
             cancelled: Callable[[], bool] | None = None):
     source, destination = Path(source).resolve(), Path(destination).resolve()

@@ -13,9 +13,17 @@ def main():
     exp.add_argument("--out-dir", required=True)
     exp.add_argument("--pid", type=int)
     exp.add_argument("--ffmpeg", help="可选：完整解码验证所用的 ffmpeg.exe")
+    exp2 = sub.add_parser("export-player2", help="实验导出：EVPlayer2 5.0.4 x64 的 EV5/EV6/EV7")
+    exp2.add_argument("inputs", nargs="+")
+    exp2.add_argument("--out-dir", required=True)
+    exp2.add_argument("--pid", type=int)
+    exp2.add_argument("--ffmpeg", help="可选：完整音视频解码验证")
     ins = sub.add_parser("inspect-installer", help="解析安装包并核对版本，不运行安装程序")
     ins.add_argument("path")
     ins.add_argument("--extractor", help=argparse.SUPPRESS)
+    ins2 = sub.add_parser("inspect-player2-installer", help="检查 EVPlayer2 5.0.4 x64 官方特定构建")
+    ins2.add_argument("path")
+    ins2.add_argument("--extractor", help="innoextract 可执行文件的路径")
     vid = sub.add_parser("inspect", help="查看视频格式候选信息")
     vid.add_argument("path")
     sub.add_parser("self-test", help="运行不需要播放器的合成数据自检")
@@ -29,9 +37,18 @@ def main():
             from .runner import export_batch
             results = export_batch(args.inputs, args.out_dir, args.pid, args.ffmpeg, notify=lambda msg: print(msg, flush=True))
             return 0 if results and all(r["success"] for r in results) else 1
+        if args.command == "export-player2":
+            from .player2 import export_batch, collect
+            expected = len(collect(args.inputs))
+            results = export_batch(args.inputs, args.out_dir, args.pid, args.ffmpeg,
+                                   notify=lambda msg: print(msg, flush=True))
+            return 0 if len(results) == expected and all(r["success"] for r in results) else 1
         if args.command == "inspect-installer":
             from .inspect import inspect_installer
             print(json.dumps(inspect_installer(args.path, args.extractor), ensure_ascii=False, indent=2))
+        elif args.command == "inspect-player2-installer":
+            from .inspect import inspect_installer
+            print(json.dumps(inspect_installer(args.path, args.extractor, player2=True), ensure_ascii=False, indent=2))
         elif args.command == "inspect":
             from .inspect import inspect_video
             print(json.dumps(inspect_video(args.path), ensure_ascii=False, indent=2))

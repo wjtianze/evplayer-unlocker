@@ -9,7 +9,7 @@ from .windows import check_engine, ENGINE_NAME
 def resource_root():
     return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
 
-def inspect_installer(path, extractor=None):
+def inspect_installer(path, extractor=None, player2=False):
     path = Path(path).resolve()
     if not path.is_file():
         raise ExportError("请选择 EVPlayer 的 Windows 安装包。")
@@ -25,7 +25,11 @@ def inspect_installer(path, extractor=None):
         candidate = Path(temporary)/"app"/ENGINE_NAME
         if not candidate.is_file():
             raise ExportError("安装包缺少预期的播放器组件。")
-        report = check_engine(candidate)
+        if player2:
+            from .player2 import check_engine as check_player2_engine
+            report = check_player2_engine(candidate)
+        else:
+            report = check_engine(candidate)
         report["installer_executed"] = False
         return report
 
