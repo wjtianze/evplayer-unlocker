@@ -34,9 +34,27 @@
 
 目前仅适配 **Windows x64 上运行的 EVPlayer 3.4.9.1 特定构建、V4A 模式 110、内部为 MP4 的文件**。匹配以组件 SHA-256 为准，同样的版本号不一定代表相同构建。
 
+### EVPlayer2 实验适配（命令行）
+
+此研究分支新增 **EVPlayer2 5.0.4 Windows 64 位特定构建的 EV5/EV6/EV7 实验导出**，使用独立命令，图形界面仍使用原有适配。
+
+已完成官方 DLL 的原生 AES、完整密钥调度表、EV5/6/EV7 读取函数的仿真对照，以及合成 MP4 的逐字节还原与完整音视频解码。**尚未用真实 EVPlayer2 课程验证 Windows 进程读取、文件封装及最终导出，不能视为已解决 issue #1。** EVS、V4A、V8A 与其它构建暂不支持；视频须在 EVPlayer2 中已正常授权播放。
+
+从源码运行（64 位 Windows，64 位 Python 3.11+）：
+
+```powershell
+python -m pip install -e .
+python scripts\evplayer2-decrypt.py "D:\课程\示例.ev5" --out-dir "D:\导出"
+python -m evplayer_unlocker.cli export-player2 "D:\课程" --out-dir "D:\导出" --ffmpeg "C:\Tools\ffmpeg.exe"
+```
+
+可选安装包检查：先运行 `python scripts\fetch-runtime.py`，再运行 `python -m evplayer_unlocker.cli inspect-player2-installer "C:\Downloads\EVPlayer2_v5.0.4.exe"`。检查只解包和核对指纹，不启动安装程序。
+
+详见[EVPlayer2 架构、逆向证据及验证边界](docs/evplayer2-analysis.md)。实验参数仅保存在进程内存；不修改播放器，不自动登录或申请授权。未知构建、无有效参数及不匹配的文件头均停止处理。
+
 开发期间用一组 34 个已授权视频验证了导出算法，总时长约 16 小时 12 分钟，全部通过完整音视频解码检查。这不是对所有 EV4A 文件的兼容承诺。
 
-其他 EVPlayer 版本、EV4/EV5/EV6/EVS、非 MP4 内部格式、不同的加密模式尚未支持。不同课程的播放参数可能不同：如果提示不匹配，请在原播放器中播放对应课程后重试。详见[兼容性与验证范围](docs/compatibility.md)。
+上述稳定适配尚不支持其他 EVPlayer 版本、EV4/EV5/EV6/EVS、非 MP4 内部格式及不同加密模式；EVPlayer2 的 EV5/EV6/EV7 仅通过前述独立实验命令处理。不同课程的播放参数可能不同：如果提示不匹配，请在原播放器中播放对应课程后重试。详见[兼容性与验证范围](docs/compatibility.md)。
 
 ## 隐私与原文件
 
