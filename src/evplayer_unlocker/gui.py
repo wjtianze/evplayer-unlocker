@@ -79,7 +79,9 @@ class App:
             def action():
                 from .inspect import inspect_installer
                 result = inspect_installer(name)
-                self.events.put(("log", "安装包检查通过：EVPlayer "+result["version"]+"。没有运行安装程序。"))
+                version = result["version"] or "未验证的构建"
+                note = "" if result["supported"] else "（未验证：导出时按对象结构尝试自动识别）"
+                self.events.put(("log", "安装包检查通过：EVPlayer "+version+note+"。没有运行安装程序。"))
             self.launch(action)
 
     def start(self):

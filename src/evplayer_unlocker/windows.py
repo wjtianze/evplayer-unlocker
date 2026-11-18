@@ -1,4 +1,4 @@
-"""Read-only access to verified EVPlayer builds; never writes session keys."""
+"""Read-only access to EVPlayer playback state; never writes session keys."""
 import ctypes as C
 from ctypes import wintypes as W
 import hashlib
@@ -9,26 +9,29 @@ from .core import ExportError, SessionKey, Cancelled
 
 ENGINE_NAME = "PlayerLibRender56_vs.dll"
 
-# Exact fingerprints of components that were verified against real recordings.
-# A matching version number alone is not enough: support is scoped per SHA-256.
-#   pointer      - size of a pointer in the player process (4 = x86, 8 = x64)
-#   vtable_rva   - RVA of the V4A (mode 110) session object vtable in the component
-#   strings      - offset of the master std::string and the operations std::string
-#                  inside the object the session pointer refers to
+# Data mode handled by this tool (Decryptor_V4A).
+MODE_V4A = 110
+
+# Fingerprints of components whose session layout was verified against real
+# recordings. These builds get the fast, exact scan below. Unknown builds are
+# not refused: they are attempted with a structural scan instead.
+#   pointer    - size of a pointer in the player process (4 = x86, 8 = x64)
+#   vtable_rva - RVA of the V4A (mode 110) session object vtable in the component
 BUILDS = {
     # EVPlayer 3.4.9.1, 32-bit player component.
     "40285804d2aea4e911c282e6f421d5b90baa8c2338158ddcf8fc6d5a25fb58bb": {
         "version": "3.4.9.1", "machine": 0x014C, "pointer": 4,
-        "vtable_rva": 0x81B1BC, "strings": (0x10, 0x28),
+        "vtable_rva": 0x81B1BC,
     },
     # EVPlayer 3.5.9, 64-bit player component.
     "6a4a481d81ce606b959355265fa27a9db6274bf1978291d04d0c6c19a377a2c3": {
         "version": "3.5.9", "machine": 0x8664, "pointer": 8,
-        "vtable_rva": 0x7FB150, "strings": (0x10, 0x30),
+        "vtable_rva": 0x7FB150,
     },
 }
 
-SUPPORTED_VERSIONS = "、".join(sorted({build["version"] for build in BUILDS.values()}))
+# PE machine type -> pointer size, used for builds that are not fingerprinted.
+MACHINES = {0x014C: 4, 0x8664: 8, 0xAA64: 8}
 
 
 def pe_machine(path: Path):
@@ -45,17 +48,60 @@ def pe_machine(path: Path):
         return struct.unpack_from("<H", coff, 4)[0]
 
 
+def layout(pointer):
+    """Field offsets of the session object: vtable, session, mode, two buffers."""
+    return {
+        "pointer": pointer,
+        "size": 5*pointer,
+        "session": pointer,
+        "mode": 2*pointer,
+        "input": 3*pointer,
+        "output": 4*pointer,
+        "master": 0x10,
+        "operations": 0x20 + 2*pointer,
+        "string_size": 16 + 2*pointer,
+    }
+
+
+def architecture(pointer):
+    return {4: "x86", 8: "x64"}.get(pointer, "unknown")
+
+
 def check_engine(path: Path):
+    """Fingerprint the component. Unknown builds are reported, not rejected."""
     with path.open("rb") as stream:
         digest = hashlib.file_digest(stream, "sha256").hexdigest()
     build = BUILDS.get(digest)
-    if build is None:
-        raise ExportError(f"播放器组件尚未适配：仅支持已验证的 EVPlayer {SUPPORTED_VERSIONS} 构建。")
-    machine = pe_machine(path)
-    if machine is not None and machine != build["machine"]:
-        raise ExportError("播放器组件指纹与已验证构建不符，已停止。")
-    return {"version": build["version"], "engine": ENGINE_NAME, "sha256": digest,
-            "architecture": "x64" if build["pointer"] == 8 else "x86", "supported": True}
+    pointer = build["pointer"] if build else MACHINES.get(pe_machine(path))
+    return {
+        "engine": ENGINE_NAME,
+        "sha256": digest,
+        "version": build["version"] if build else None,
+        "architecture": architecture(pointer),
+        "pointer": pointer,
+        "supported": build is not None,
+    }
+
+
+def object_layout(obj, pointer, module_base, module_size):
+    """Describe a plausible mode-110 session object, or None if implausible."""
+    if pointer not in (4, 8):
+        return None
+    shape = layout(pointer)
+    if len(obj) != shape["size"]:
+        return None
+    packing = "<I" if pointer == 4 else "<Q"
+    vtable = struct.unpack_from(packing, obj, 0)[0]
+    if not module_base <= vtable < module_base + module_size:
+        return None
+    mode = struct.unpack_from("<i", obj, shape["mode"])[0]
+    helper = struct.unpack_from(packing, obj, shape["session"])[0]
+    input_buffer = struct.unpack_from(packing, obj, shape["input"])[0]
+    output_buffer = struct.unpack_from(packing, obj, shape["output"])[0]
+    if mode != MODE_V4A or not helper or not input_buffer or not output_buffer:
+        return None
+    return {"helper": helper, "master": helper + shape["master"],
+            "operations": helper + shape["operations"]}
 
 
 class ProcessEntry(C.Structure):
@@ -138,25 +184,20 @@ def sessions(pid=None, cancelled=lambda: False):
         ok = k.Module32FirstW(h, C.byref(entry))
         while ok:
             if entry.name.lower() == ENGINE_NAME.lower():
-                module = (entry.base, Path(entry.path))
+                module = (entry.base, entry.length, Path(entry.path))
                 break
             ok = k.Module32NextW(h, C.byref(entry))
     finally:
         k.CloseHandle(h)
     if module is None:
         raise ExportError("未找到播放器解码组件，请先打开并正常播放视频。")
-    report = check_engine(module[1])
-    build = BUILDS[report["sha256"]]
-    pointer = build["pointer"]
-    packing, limit = ("<I", 0x100000000) if pointer == 4 else ("<Q", 0x7FFFFFFFFFFF)
-    # Object layout: vtable, session pointer, mode(int), input buffer, output buffer.
-    session_offset = pointer
-    mode_offset = 2*pointer
-    input_offset = 3*pointer
-    output_offset = 4*pointer
-    layout_size = output_offset + pointer
-    master_offset, operations_offset = build["strings"]
-    string_size = 16 + 2*pointer
+    report = check_engine(module[2])
+    pointer = report["pointer"]
+    if pointer is None:
+        raise ExportError("无法识别播放器组件是 32 位还是 64 位；请确认使用的是 EVPlayer 自带的组件。")
+    shape = layout(pointer)
+    packing = "<I" if pointer == 4 else "<Q"
+    limit = 0x100000000 if pointer == 4 else 0x7FFFFFFFFFFF
     h = k.OpenProcess(0x410, False, pid)
     if not h:
         raise failure()
@@ -168,16 +209,24 @@ def sessions(pid=None, cancelled=lambda: False):
         return buffer.raw[:count.value]
 
     def string_at(address):
-        header = read(address, string_size)
-        if len(header) != string_size:
+        header = read(address, shape["string_size"])
+        if len(header) != shape["string_size"]:
             return b""
         size, capacity = struct.unpack_from("<II", header, 16) if pointer == 4 else struct.unpack_from("<QQ", header, 16)
         if size > 32 or capacity < size:
             return b""
         value = read(struct.unpack_from(packing, header)[0], size) if capacity >= 16 else header[:size]
-        return value if read(address, string_size) == header else b""
+        return value if read(address, shape["string_size"]) == header else b""
 
-    needle = struct.pack(packing, module[0] + build["vtable_rva"])
+    if report["supported"]:
+        # Verified build: the vtable RVA is the exact anchor used during validation.
+        needle = struct.pack(packing, module[0] + BUILDS[report["sha256"]]["vtable_rva"])
+        skip = 0
+    else:
+        # Unknown build: look for the mode field itself and validate the object
+        # shape around it (vtable inside the component, two live buffers).
+        needle = struct.pack("<i", MODE_V4A)
+        skip = shape["mode"]
     address = 0
     found = []
     try:
@@ -193,23 +242,21 @@ def sessions(pid=None, cancelled=lambda: False):
                 for chunk in range(start, end, 1024*1024):
                     if cancelled():
                         raise Cancelled("检查已取消。")
-                    data = read(chunk, min(end-chunk, 1024*1024 + layout_size))
-                    offset = data.find(needle)
-                    while offset >= 0:
-                        obj = read(chunk + offset, layout_size)
-                        if len(obj) == layout_size:
-                            helper = struct.unpack_from(packing, obj, session_offset)[0]
-                            mode = struct.unpack_from("<i", obj, mode_offset)[0]
-                            input_buffer = struct.unpack_from(packing, obj, input_offset)[0]
-                            output_buffer = struct.unpack_from(packing, obj, output_offset)[0]
-                            if helper and mode == 110 and input_buffer and output_buffer:
+                    data = read(chunk, min(end - chunk, 1024*1024))
+                    position = data.find(needle)
+                    while position >= 0:
+                        base = chunk + position - skip
+                        if base >= start and base % pointer == 0:
+                            fields = object_layout(read(base, shape["size"]), pointer, module[0], module[1])
+                            if fields:
                                 try:
-                                    candidate = SessionKey(string_at(helper + master_offset), string_at(helper + operations_offset))
-                                    if candidate not in found:
-                                        found.append(candidate)
+                                    candidate = SessionKey(string_at(fields["master"]), string_at(fields["operations"]))
                                 except ExportError:
                                     pass
-                        offset = data.find(needle, offset + pointer)
+                                else:
+                                    if candidate not in found:
+                                        found.append(candidate)
+                        position = data.find(needle, position + pointer)
             if end <= address:
                 break
             address = end

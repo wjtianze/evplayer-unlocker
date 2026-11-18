@@ -27,6 +27,8 @@ def inspect_installer(path, extractor=None):
             raise ExportError("安装包缺少预期的播放器组件。")
         report = check_engine(candidate)
         report["installer_executed"] = False
+        if not report["supported"]:
+            report["note"] = "未验证的播放器组件：导出时会按对象结构自动识别，不保证兼容。"
         return report
 
 def inspect_video(path):
