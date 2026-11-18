@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 if os.name != "nt":
     raise SystemExit("Build the Windows package on Windows x64.")
 k = ctypes.WinDLL("kernel32")
@@ -57,7 +57,7 @@ build_info = {"version": VERSION, "python": sys.version.split()[0],
               "dependencies": {name: importlib.metadata.version(name) for name in ["pycryptodome", "pyinstaller"]},
               "player_components_included": False, "course_data_included": False}
 (package/"build-info.json").write_text(json.dumps(build_info, indent=2), encoding="utf-8")
-(package/"使用说明.txt").write_text("双击 EVPlayer Unlocker.exe 打开界面。\n请先在 EVPlayer 3.4.9.1 正常播放同一课程。\n如遇拒绝访问，请右键以管理员身份运行。\n安装包检查为可选功能，不会运行安装程序。\n详细说明见 README.md。\n", encoding="utf-8-sig")
+(package/"使用说明.txt").write_text("双击 EVPlayer Unlocker.exe 打开界面。\n请先在 EVPlayer 3.4.9.1 或 3.5.9 正常播放同一课程。\n如遇拒绝访问，请右键以管理员身份运行。\n安装包检查为可选功能，不会运行安装程序。\n详细说明见 README.md。\n", encoding="utf-8-sig")
 subprocess.run([str(package/"EVPlayerUnlockerCLI.exe"), "self-test"], check=True)
 for file in package.rglob("*"):
     if file.is_file() and (file.suffix.lower() in {".ev4a", ".mp4", ".partial"} or file.name.lower() in {"playerlibrender56_vs.dll", "evplayer.exe", "windows.exe"}):
