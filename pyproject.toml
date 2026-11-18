@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evplayer-unlocker"
-version = "1.0.0"
-description = "Export authorized EVPlayer 3.4.9.1 V4A recordings to ordinary MP4 files"
+version = "1.1.1"
+description = "Export authorized EVPlayer V4A recordings to ordinary MP4 files (no player version gate)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

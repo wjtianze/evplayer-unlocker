@@ -20,7 +20,7 @@ class App:
         root.minsize(640, 480)
         outer = ttk.Frame(root, padding=18); outer.pack(fill="both", expand=True)
         ttk.Label(outer, text="EVPlayer 视频导出", font=("Microsoft YaHei UI", 17, "bold")).pack(anchor="w")
-        ttk.Label(outer, text="先在 EVPlayer 3.4.9.1 中正常播放同一课程，再选择视频导出。", wraplength=690).pack(anchor="w", pady=(8, 14))
+        ttk.Label(outer, text="先在 EVPlayer 3.4.9.1 或 3.5.9 中正常播放同一课程，再选择视频导出。", wraplength=690).pack(anchor="w", pady=(8, 14))
         row = ttk.Frame(outer); row.pack(fill="x")
         self.buttons = []
         for label, action in [("检查安装包", self.installer), ("选择视频", self.select_files), ("选择文件夹", self.select_folder)]:
@@ -79,7 +79,9 @@ class App:
             def action():
                 from .inspect import inspect_installer
                 result = inspect_installer(name)
-                self.events.put(("log", "安装包检查通过：EVPlayer "+result["version"]+"。没有运行安装程序。"))
+                version = result["version"] or "未验证的构建"
+                note = "" if result["supported"] else "（未验证：导出时按对象结构尝试自动识别）"
+                self.events.put(("log", "安装包检查通过：EVPlayer "+version+note+"。没有运行安装程序。"))
             self.launch(action)
 
     def start(self):

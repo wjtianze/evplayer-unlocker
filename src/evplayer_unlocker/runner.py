@@ -19,9 +19,19 @@ def collect(inputs):
         raise ExportError("没有找到 .ev4a 文件。")
     return files
 
+# Some authorized recordings carry duplicate source timestamps. FFmpeg's null
+# muxer then logs a timestamp warning, which says nothing about whether the
+# video and audio actually decoded.
+HARMLESS_DECODE_WARNINGS = ("non monotonically increasing dts",)
+
+def decode_errors(text):
+    """Return FFmpeg output lines that indicate a real decoding problem."""
+    return [line for line in text.splitlines()
+            if line.strip() and not any(token in line for token in HARMLESS_DECODE_WARNINGS)]
+
 def verify(path, ffmpeg, cancelled):
     with tempfile.TemporaryFile() as log:
-        args = [str(ffmpeg), "-hide_banner", "-nostdin", "-v", "error", "-threads", "2", "-xerror", "-err_detect", "explode", "-i", str(path), "-map", "0:v:0", "-map", "0:a:0", "-enc_time_base:v", "-1", "-fps_mode:v", "passthrough", "-threads", "2", "-f", "null", "-"]
+        args = [str(ffmpeg), "-hide_banner", "-nostdin", "-v", "error", "-threads", "2", "-xerror", "-err_detect", "explode", "-i", str(path), "-map", "0:v:0", "-map", "0:a:0", "-fps_mode:v", "passthrough", "-threads", "2", "-f", "null", "-"]
         process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=log,
                                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
         try:
@@ -40,8 +50,8 @@ def verify(path, ffmpeg, cancelled):
                 except subprocess.TimeoutExpired:
                     process.kill(); process.wait()
         log.seek(0)
-        errors = log.read(65536)
-        if code != 0 or errors.strip():
+        errors = log.read().decode("utf-8", "replace")
+        if code != 0 or decode_errors(errors):
             raise ExportError("完整解码验证未通过；请检查文件，勿将其视为已验证结果。")
     return True
 

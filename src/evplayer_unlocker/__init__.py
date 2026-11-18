@@ -1,2 +1,2 @@
-"""EVPlayer Unlocker: version-scoped export of authorized local recordings."""
-__version__ = "1.0.0"
+"""EVPlayer Unlocker: export of authorized local recordings, no version gate."""
+__version__ = "1.1.1"
